@@ -1,0 +1,551 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyMvQEpjnodF0xqdJTyJf8LS",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/zahira456/2411532015_PrakBigData/blob/main/praktikum2\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install faker -q"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "gVPVENe3yoHF",
+        "outputId": "1ae4ed41-0f5f-4ab8-d170-2d8ad865be7c"
+      },
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[?25l   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m0.0/2.1 MB\u001b[0m \u001b[31m?\u001b[0m eta \u001b[36m-:--:--\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[91m╸\u001b[0m \u001b[32m2.1/2.1 MB\u001b[0m \u001b[31m73.9 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m2.1/2.1 MB\u001b[0m \u001b[31m42.6 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25h"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "from faker import Faker\n",
+        "import random"
+      ],
+      "metadata": {
+        "id": "p79X2rG9y2UQ"
+      },
+      "execution_count": 4,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 5,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Nk_3BUtMxQ1U",
+        "outputId": "63295553-01cc-4f79-ec6a-32d5ff572d86"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Mounted at /content/drive\n",
+            "[]\n"
+          ]
+        }
+      ],
+      "source": [
+        "from google.colab import drive\n",
+        "drive.mount(\"/content/drive\")\n",
+        "\n",
+        "import os\n",
+        "DIR_KERJA = \"/content/data\"\n",
+        "DIR_SIMPAN = \"/content/drive/MyDrive/BigData/Praktikum2\"\n",
+        "os.makedirs (DIR_KERJA, exist_ok=True)\n",
+        "os.makedirs (DIR_SIMPAN, exist_ok=True)\n",
+        "print(os.listdir (DIR_SIMPAN))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "SEED = 7\n",
+        "np.random.seed(SEED)\n",
+        "random.seed(SEED)\n",
+        "fake = Faker(\"id_ID\")\n",
+        "Faker.seed(SEED)\n",
+        "\n",
+        "N = 500\n",
+        "kategori_produk = [\"Elektronik\", \"Fashion\", \"Kesehatan\", \"Rumah Tangga\", \"Olahraga\", \"Buku\"]\n",
+        "metode_bayar = [\"Transfer Bank\", \"E-Wallet\", \"COD\", \"Kartu Kredit\"]\n",
+        "\n",
+        "rows = []\n",
+        "for i in range(1, N + 1):\n",
+        "  trx_id = f\"TRX{i:05d}\"\n",
+        "  nama_pelanggan = fake.name()\n",
+        "  produk = fake.word().capitalize() + \" \" + random.choice([\"Pro\", \"Lite\", \"Max\", \"Basic\", \" \"])\n",
+        "  kategori = random.choice(kategori_produk)\n",
+        "  harga_dasar = random.choice([15000, 25000, 50000, 75000, 120000, 250000, 500000, 1200000])\n",
+        "  qty = random.randint(1, 5)\n",
+        "\n",
+        "  #variasi format harga : angka polos, ada \"Rp\", ada desimal \".0\", ada spasi\n",
+        "  harga_variants = [\n",
+        "      str(harga_dasar),\n",
+        "      f\"Rp{harga_dasar:,}\".replace(\",\", \".\"),\n",
+        "      f\"{harga_dasar}.0\",\n",
+        "      f\"{harga_dasar}\",\n",
+        "  ]\n",
+        "  harga = random.choice(harga_variants)\n",
+        "\n",
+        "  # variasi format tanggal : ISO, DD/MM/YYYY, DD-MM-YYYY\n",
+        "  tgl = fake.date_between(start_date=\"-90d\", end_date=\"today\")\n",
+        "  tgl_variants = [tgl.strftime(\"%Y-%m-%d\"), tgl.strftime(\"%d/%m/%Y\"), tgl.strftime(\"%d-%m-%Y\")]\n",
+        "  tanggal = random.choice(tgl_variants)\n",
+        "\n",
+        "  metode = random.choice(metode_bayar)\n",
+        "  if random.random() < 0.3:\n",
+        "    metode = metode.lower()\n",
+        "  if random.random() < 0.2:\n",
+        "    kategori = kategori.upper() + \" \"\n",
+        "\n",
+        "  kota = fake.city()\n",
+        "  rating = random.choice([1, 2, 3, 4, 5, None, None]) #rating opsional\n",
+        "\n",
+        "  rows.append({\n",
+        "      \"transaction_id\": trx_id,\n",
+        "      \"customer_name\": nama_pelanggan,\n",
+        "      \"product_name\": produk.strip(),\n",
+        "      \"category\": kategori,\n",
+        "      \"price\": harga,\n",
+        "      \"quantity\": qty,\n",
+        "      \"payment_method\": metode,\n",
+        "      \"transaction_date\": tanggal,\n",
+        "      \"shipping_city\": kota,\n",
+        "      \"rating\": rating,\n",
+        "  })\n",
+        "\n",
+        "df = pd.DataFrame(rows)\n",
+        "\n",
+        "# suntikkan missing value pada beberapa kolom\n",
+        "for col, frac in [(\"customer_name\", 0.02), (\"shipping_city\", 0.03), (\"payment_method\", 0.015)]:\n",
+        "  idx = df.sample(frac=frac, random_state=SEED).index\n",
+        "  df.loc[idx, col] = np.nan\n",
+        "\n",
+        "# duplikasi 15 baris baris (mensimulasikan transaksi yang tercatat dua kali)\n",
+        "dup_rows = df.sample(n=15, random_state=SEED)\n",
+        "df = pd.concat([df, dup_rows], ignore_index=True)\n",
+        "df = df.sample(frac=1, random_state=SEED).reset_index(drop=True)\n",
+        "\n",
+        "df.to_csv(\"transaksi_mentah.csv\", index=False)\n",
+        "print(\"Jumlah baris:\", len(df))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "pKfWnDe8y8mI",
+        "outputId": "c9c162af-821b-4b30-f681-592d4980565f"
+      },
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Jumlah baris: 515\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Melihat jumlah missing value\n",
+        "print(\"Missing value sebelum penanganan:\")\n",
+        "print(df.isnull().sum())\n",
+        "\n",
+        "# Menangani missing value\n",
+        "df = df.dropna(\n",
+        "    subset=[\n",
+        "        \"customer_name\",\n",
+        "        \"payment_method\"\n",
+        "    ]\n",
+        ")\n",
+        "\n",
+        "df[\"shipping_city\"] = df[\"shipping_city\"].fillna(\n",
+        "    \"Tidak Diketahui\"\n",
+        ")\n",
+        "\n",
+        "print(\"\\nMissing value setelah penanganan:\")\n",
+        "print(df.isnull().sum())"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "01AQqUrCzEi2",
+        "outputId": "e467b399-d2b8-4f60-ed7c-91d2c8d4f4ec"
+      },
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Missing value sebelum penanganan:\n",
+            "transaction_id        0\n",
+            "customer_name        20\n",
+            "product_name          0\n",
+            "category              0\n",
+            "price                 0\n",
+            "quantity              0\n",
+            "payment_method       16\n",
+            "transaction_date      0\n",
+            "shipping_city        30\n",
+            "rating              120\n",
+            "dtype: int64\n",
+            "\n",
+            "Missing value setelah penanganan:\n",
+            "transaction_id        0\n",
+            "customer_name         0\n",
+            "product_name          0\n",
+            "category              0\n",
+            "price                 0\n",
+            "quantity              0\n",
+            "payment_method        0\n",
+            "transaction_date      0\n",
+            "shipping_city         0\n",
+            "rating              118\n",
+            "dtype: int64\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Melihat jumlah missing value\n",
+        "print(\"Missing value sebelum penanganan:\")\n",
+        "print(df.isnull().sum())\n",
+        "\n",
+        "# Menangani missing value\n",
+        "df = df.dropna(\n",
+        "    subset=[\n",
+        "        \"customer_name\",\n",
+        "        \"payment_method\"\n",
+        "    ]\n",
+        ")\n",
+        "\n",
+        "df[\"shipping_city\"] = df[\"shipping_city\"].fillna(\n",
+        "    \"Tidak Diketahui\"\n",
+        ")\n",
+        "\n",
+        "print(\"\\nMissing value setelah penanganan:\")\n",
+        "print(df.isnull().sum())"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "_vt7WI1dzHM8",
+        "outputId": "f7f2d9e0-f263-480e-c3e5-f8ffd5947538"
+      },
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Missing value sebelum penanganan:\n",
+            "transaction_id        0\n",
+            "customer_name         0\n",
+            "product_name          0\n",
+            "category              0\n",
+            "price                 0\n",
+            "quantity              0\n",
+            "payment_method        0\n",
+            "transaction_date      0\n",
+            "shipping_city         0\n",
+            "rating              118\n",
+            "dtype: int64\n",
+            "\n",
+            "Missing value setelah penanganan:\n",
+            "transaction_id        0\n",
+            "customer_name         0\n",
+            "product_name          0\n",
+            "category              0\n",
+            "price                 0\n",
+            "quantity              0\n",
+            "payment_method        0\n",
+            "transaction_date      0\n",
+            "shipping_city         0\n",
+            "rating              118\n",
+            "dtype: int64\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Mengecek duplicate\n",
+        "jumlah_duplicate = df.duplicated().sum()\n",
+        "jumlah_duplicate_id = df[\"transaction_id\"].duplicated().sum()\n",
+        "\n",
+        "print(\"Baris duplicate:\", jumlah_duplicate)\n",
+        "print(\"transaction_id duplicate:\", jumlah_duplicate_id)\n",
+        "\n",
+        "# Menghapus duplicate\n",
+        "df = df.drop_duplicates()\n",
+        "\n",
+        "print(\"Jumlah baris setelah drop_duplicates():\", len(df))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "QGEqwT9JzI6P",
+        "outputId": "21e9f386-0055-452a-fe4d-f312b832ae94"
+      },
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Baris duplicate: 5\n",
+            "transaction_id duplicate: 5\n",
+            "Jumlah baris setelah drop_duplicates(): 490\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "for col in [\n",
+        "    \"category\",\n",
+        "    \"payment_method\",\n",
+        "    \"shipping_city\"\n",
+        "]:\n",
+        "    df[col] = (\n",
+        "        df[col]\n",
+        "        .astype(\"string\")\n",
+        "        .str.strip()\n",
+        "        .str.title()\n",
+        "    )\n",
+        "\n",
+        "df[\"payment_method\"] = df[\"payment_method\"].replace({\n",
+        "    \"Cod\": \"COD\"\n",
+        "})"
+      ],
+      "metadata": {
+        "id": "nmeZuhz5zKQf"
+      },
+      "execution_count": 10,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def bersihkan_harga(x):\n",
+        "    if pd.isna(x):\n",
+        "        return np.nan\n",
+        "\n",
+        "    x = str(x).strip().replace(\"Rp\", \"\").replace(\".\", \"\").replace(\",\", \".\")\n",
+        "\n",
+        "    try:\n",
+        "        return float(x)\n",
+        "    except ValueError:\n",
+        "        return np.nan\n",
+        "\n",
+        "df[\"price\"] = df[\"price\"].apply(bersihkan_harga)"
+      ],
+      "metadata": {
+        "id": "5AgiZiUZzL73"
+      },
+      "execution_count": 16,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def parse_tanggal(x):\n",
+        "    for fmt in (\"%Y-%m-%d\", \"%d/%m/%Y\", \"%d-%m-%Y\"):\n",
+        "        try:\n",
+        "            return pd.to_datetime(x, format=fmt)\n",
+        "        except ValueError:\n",
+        "            continue\n",
+        "    return pd.NaT\n",
+        "\n",
+        "df[\"transaction_date\"] = df[\"transaction_date\"].apply(parse_tanggal).dt.strftime(\"%Y-%m-%d\")"
+      ],
+      "metadata": {
+        "id": "8QfzD_v4zZba"
+      },
+      "execution_count": 14,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df[\"quantity\"] = df[\"quantity\"].astype(int)\n",
+        "df[\"price\"] = df[\"price\"].astype(float)\n",
+        "\n",
+        "print(df.dtypes)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "WhstO0nszNVK",
+        "outputId": "b61336c9-561c-484c-89bf-4eba50abbfe8"
+      },
+      "execution_count": 17,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "transaction_id              object\n",
+            "customer_name               object\n",
+            "product_name                object\n",
+            "category            string[python]\n",
+            "price                      float64\n",
+            "quantity                     int64\n",
+            "payment_method      string[python]\n",
+            "transaction_date            object\n",
+            "shipping_city       string[python]\n",
+            "rating                     float64\n",
+            "dtype: object\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.to_csv(\n",
+        "    \"transaksi_bersih_seed7.csv\",\n",
+        "    index=False\n",
+        ")\n",
+        "\n",
+        "print(\n",
+        "    \"Dataset bersih dengan SEED = 7:\",\n",
+        "    len(df),\n",
+        "    \"baris\"\n",
+        ")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "06QC36EWzQAR",
+        "outputId": "fecb2137-8e0e-47da-909e-44e2db1b1764"
+      },
+      "execution_count": 18,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Dataset bersih dengan SEED = 7: 490 baris\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(df[\"price\"].head())\n",
+        "print(df[\"price\"].dtype)"
+      ],
+      "metadata": {
+        "id": "QKl7p-YVyC0s"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def bersihkan_harga(x):\n",
+        "    if pd.isna(x):\n",
+        "        return np.nan\n",
+        "\n",
+        "    x = str(x).strip().replace(\"Rp\", \"\").replace(\".\", \"\").replace(\",\", \".\")\n",
+        "\n",
+        "    try:\n",
+        "        return float(x)\n",
+        "    except ValueError:\n",
+        "        return np.nan\n",
+        "\n",
+        "df[\"price\"] = df[\"price\"].apply(bersihkan_harga)"
+      ],
+      "metadata": {
+        "id": "STaVj0dFyF0a"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df[\"is_valid_price\"] = df[\"price\"] > 0\n",
+        "\n",
+        "print(df[[\"price\", \"is_valid_price\"]].head())\n",
+        "\n",
+        "print(\"\\nJumlah harga tidak valid:\")\n",
+        "print((df[\"is_valid_price\"] == False).sum())"
+      ],
+      "metadata": {
+        "id": "SUUCUubFyOWo"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "jumlah_transaksi = df[\"category\"].value_counts()\n",
+        "\n",
+        "print(jumlah_transaksi)"
+      ],
+      "metadata": {
+        "id": "jcBPodmQyYS8"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
