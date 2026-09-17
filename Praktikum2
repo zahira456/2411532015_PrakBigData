@@ -1,0 +1,427 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyM9lc3+sknQ3/kwcw5G2ulS",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/zahira456/2411532015_PrakBigData/blob/main/Praktikum2\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 40,
+      "metadata": {
+        "id": "Tx6vlfnLDvoy"
+      },
+      "outputs": [],
+      "source": [
+        "!pip install faker -q"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "K-1. Import Library dan Inisialisasi\n",
+        "\n",
+        "Pada tahap ini dilakukan import library yang akan digunakan dalam praktikum.\n",
+        "Library yang digunakan adalah NumPy untuk pengolahan numerik, pandas untuk\n",
+        "pengolahan data berbentuk tabel, Faker untuk membuat data sintetis, dan random\n",
+        "untuk proses pengacakan data."
+      ],
+      "metadata": {
+        "id": "OxV5AO2Pp-iO"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "import random\n",
+        "from faker import Faker"
+      ],
+      "metadata": {
+        "id": "Gx28q3-PGG-y"
+      },
+      "execution_count": 41,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from google.colab import drive\n",
+        "drive.mount(\"/content/drive\")\n",
+        "\n",
+        "import os\n",
+        "DIR_KERJA = \"/content/data\"\n",
+        "DIR_SIMPAN = \"/content/drive/MyDrive/BigData/Praktikum2\"\n",
+        "os.makedirs (DIR_KERJA, exist_ok=True)\n",
+        "os.makedirs (DIR_SIMPAN, exist_ok=True)\n",
+        "print(os.listdir (DIR_SIMPAN))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "I5sxnegjQ5Fv",
+        "outputId": "b1acca8f-6fb2-4f60-82b5-5e659e0fd291"
+      },
+      "execution_count": 42,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Drive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount(\"/content/drive\", force_remount=True).\n",
+            "[]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "K-2. Membuat Dataset Sintetis (Simulasi Data Acquisition)\n",
+        "\n",
+        "Pada tahap ini dibuat dataset sintetis yang mensimulasikan data transaksi\n",
+        "marketplace. Dataset dibuat sebanyak 500 transaksi awal menggunakan data acak\n",
+        "yang dapat direproduksi dengan SEED = 42."
+      ],
+      "metadata": {
+        "id": "ZgDI0LZmqBh4"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "SEED = 42\n",
+        "np.random.seed(SEED)\n",
+        "random.seed(SEED)\n",
+        "fake = Faker(\"id_ID\")\n",
+        "Faker.seed(SEED)\n",
+        "\n",
+        "N = 500\n",
+        "kategori_produk = [\"Elektronik\", \"Fashion\", \"Kesehatan\", \"Rumah Tangga\", \"Olahraga\", \"Buku\"]\n",
+        "metode_bayar = [\"Transfer Bank\", \"E-Wallet\", \"COD\", \"Kartu Kredit\"]\n",
+        "\n",
+        "rows = []\n",
+        "for i in range(1, N + 1):\n",
+        "  trx_id = f\"TRX{i:05d}\"\n",
+        "  nama_pelanggan = fake.name()\n",
+        "  produk = fake.word().capitalize() + \" \" + random.choice([\"Pro\", \"Lite\", \"Max\", \"Basic\", \" \"])\n",
+        "  kategori = random.choice(kategori_produk)\n",
+        "  harga_dasar = random.choice([15000, 25000, 50000, 75000, 120000, 250000, 500000, 1200000])\n",
+        "  qty = random.randint(1, 5)\n",
+        "\n",
+        "  #variasi format harga : angka polos, ada \"Rp\", ada desimal \".0\", ada spasi\n",
+        "  harga_variants = [\n",
+        "      str(harga_dasar),\n",
+        "      f\"Rp{harga_dasar:,}\".replace(\",\", \".\"),\n",
+        "      f\"{harga_dasar}.0\",\n",
+        "      f\"{harga_dasar}\",\n",
+        "  ]\n",
+        "  harga = random.choice(harga_variants)\n",
+        "\n",
+        "  # variasi format tanggal : ISO, DD/MM/YYYY, DD-MM-YYYY\n",
+        "  tgl = fake.date_between(start_date=\"-90d\", end_date=\"today\")\n",
+        "  tgl_variants = [tgl.strftime(\"%Y-%m-%d\"), tgl.strftime(\"%d/%m/%Y\"), tgl.strftime(\"%d-%m-%Y\")]\n",
+        "  tanggal = random.choice(tgl_variants)\n",
+        "\n",
+        "  metode = random.choice(metode_bayar)\n",
+        "  if random.random() < 0.3:\n",
+        "    metode = metode.lower()\n",
+        "  if random.random() < 0.2:\n",
+        "    kategori = kategori.upper() + \" \"\n",
+        "\n",
+        "  kota = fake.city()\n",
+        "  rating = random.choice([1, 2, 3, 4, 5, None, None]) #rating opsional\n",
+        "\n",
+        "  rows.append({\n",
+        "      \"transaction_id\": trx_id,\n",
+        "      \"customer_name\": nama_pelanggan,\n",
+        "      \"product_name\": produk.strip(),\n",
+        "      \"category\": kategori,\n",
+        "      \"price\": harga,\n",
+        "      \"quantity\": qty,\n",
+        "      \"payment_method\": metode,\n",
+        "      \"transaction_date\": tanggal,\n",
+        "      \"shipping_city\": kota,\n",
+        "      \"rating\": rating,\n",
+        "  })\n",
+        "\n",
+        "df = pd.DataFrame(rows)\n",
+        "\n",
+        "# suntikkan missing value pada beberapa kolom\n",
+        "for col, frac in [(\"customer_name\", 0.02), (\"shipping_city\", 0.03), (\"payment_method\", 0.015)]:\n",
+        "  idx = df.sample(frac=frac, random_state=SEED).index\n",
+        "  df.loc[idx, col] = np.nan\n",
+        "\n",
+        "# duplikasi 15 baris baris (mensimulasikan transaksi yang tercatat dua kali)\n",
+        "dup_rows = df.sample(n=15, random_state=SEED)\n",
+        "df = pd.concat([df, dup_rows], ignore_index=True)\n",
+        "df = df.sample(frac=1, random_state=SEED).reset_index(drop=True)\n",
+        "\n",
+        "df.to_csv(\"transaksi_mentah.csv\", index=False)\n",
+        "print(\"Jumlah baris:\", len(df))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "IdBV1AcnOgxF",
+        "outputId": "abe05d0e-1c57-4c00-c08b-2d802fb00d7b"
+      },
+      "execution_count": 43,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Jumlah baris: 515\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "K-3. Deteksi dan Penanganan Missing Value\n",
+        "\n",
+        "Pada tahap ini dilakukan pemeriksaan terhadap nilai yang kosong atau missing\n",
+        "value pada setiap kolom. Setelah jumlah missing value diketahui, setiap kolom\n",
+        "ditangani menggunakan strategi yang berbeda sesuai dengan fungsi dan\n",
+        "kebutuhan datanya."
+      ],
+      "metadata": {
+        "id": "5Kp-hnTWqONO"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(df.isnull().sum())"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Z8M9AQeJPc78",
+        "outputId": "cd8ff191-7753-4295-df2e-58cd6b5c7de9"
+      },
+      "execution_count": 44,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "transaction_id        0\n",
+            "customer_name        20\n",
+            "product_name          0\n",
+            "category              0\n",
+            "price                 0\n",
+            "quantity              0\n",
+            "payment_method       16\n",
+            "transaction_date      0\n",
+            "shipping_city        30\n",
+            "rating              166\n",
+            "dtype: int64\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "K-4. Deteksi dan Penanganan Duplicate\n",
+        "\n",
+        "Pada tahap ini dilakukan pemeriksaan terhadap data duplicate. Duplicate adalah\n",
+        "baris transaksi yang tercatat lebih dari satu kali. Pemeriksaan dilakukan\n",
+        "dengan melihat duplicate berdasarkan seluruh isi baris dan berdasarkan\n",
+        "transaction_id."
+      ],
+      "metadata": {
+        "id": "_bTtWSiZqS_o"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(\"Baris duplicate (semua kolom sama):\", df.duplicated().sum())\n",
+        "print(\"transaction_id duplicate:\", df['transaction_id'].duplicated().sum())\n",
+        "\n",
+        "df = df.drop_duplicates()\n",
+        "print(\"Jumlah baris setelah drop_duplicates():\", len(df))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "dDZeV7WlQClX",
+        "outputId": "6c082b96-0629-4d1e-b6bc-7c5bbf11f625"
+      },
+      "execution_count": 45,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Baris duplicate (semua kolom sama): 15\n",
+            "transaction_id duplicate: 15\n",
+            "Jumlah baris setelah drop_duplicates(): 500\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "K-5. Koreksi Tipe Data dan Standardisasi Format\n",
+        "\n",
+        "Pada tahap ini dilakukan perbaikan format data agar setiap kolom memiliki\n",
+        "bentuk yang sesuai. Prosesnya meliputi standardisasi teks kategorikal,\n",
+        "perubahan kolom price menjadi data numerik, standardisasi tanggal menjadi\n",
+        "format YYYY-MM-DD, serta finalisasi tipe data quantity dan price."
+      ],
+      "metadata": {
+        "id": "7g2OTZhIrf2K"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "for col in [\"category\", \"payment_method\", \"shipping_city\"]:\n",
+        "    df[col] = df[col].astype(\"string\").str.strip().str.title()\n",
+        "\n",
+        "# \"Cod\" adalah singkatan: kembalikan ke huruf kapital penuh setelah Title Case\n",
+        "df[\"payment_method\"] = df[\"payment_method\"].replace({\"Cod\": \"COD\"})"
+      ],
+      "metadata": {
+        "id": "eFAMWyUyme7i"
+      },
+      "execution_count": 46,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def bersihkan_harga(x):\n",
+        "    if pd.isna(x):\n",
+        "        return np.nan\n",
+        "\n",
+        "    x = str(x).strip().replace(\"Rp\", \"\").replace(\".\", \"\").replace(\",\", \".\")\n",
+        "\n",
+        "    try:\n",
+        "        return float(x)\n",
+        "    except ValueError:\n",
+        "        return np.nan\n",
+        "\n",
+        "df[\"price\"] = df[\"price\"].apply(bersihkan_harga)"
+      ],
+      "metadata": {
+        "id": "eGAdXY-xmfmg"
+      },
+      "execution_count": 47,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def parse_tanggal(x):\n",
+        "    for fmt in (\"%Y-%m-%d\", \"%d/%m/%Y\", \"%d-%m-%Y\"):\n",
+        "        try:\n",
+        "            return pd.to_datetime(x, format=fmt)\n",
+        "        except ValueError:\n",
+        "            continue\n",
+        "    return pd.NaT\n",
+        "\n",
+        "df[\"transaction_date\"] = df[\"transaction_date\"].apply(parse_tanggal).dt.strftime(\"%Y-%m-%d\")"
+      ],
+      "metadata": {
+        "id": "q3BCHs9xmiZ0"
+      },
+      "execution_count": 48,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df[\"quantity\"] = df[\"quantity\"].astype(int)\n",
+        "df[\"price\"] = df[\"price\"].astype(float)"
+      ],
+      "metadata": {
+        "id": "-jtB9tmomk6Y"
+      },
+      "execution_count": 49,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df = df.dropna(subset=[\"customer_name\", \"payment_method\"])\n",
+        "df[\"shipping_city\"] = df[\"shipping_city\"].fillna(\"Unknown\")"
+      ],
+      "metadata": {
+        "id": "FLb8Fki1m-Tz"
+      },
+      "execution_count": 54,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "K-6. Ekspor Dataset Bersih\n",
+        "\n",
+        "Setelah seluruh proses preprocessing selesai, dataset yang telah dibersihkan\n",
+        "disimpan dalam bentuk file CSV. File hasil akhir harus menggunakan nama\n",
+        "transaksi_bersih.csv karena file tersebut akan digunakan pada praktikum\n",
+        "berikutnya."
+      ],
+      "metadata": {
+        "id": "hL2Q93YJrrB5"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.to_csv(\"transaksi_bersih.csv\", index=False)\n",
+        "print(\"dataset besih tersimpan:\", len(df), \"baris\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "xyCbQsj7WnrQ",
+        "outputId": "7b266ad8-47a5-4b77-84e2-d2bf3c7b5e64"
+      },
+      "execution_count": 55,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "dataset besih tersimpan: 490 baris\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
